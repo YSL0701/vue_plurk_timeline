@@ -2,16 +2,24 @@
   <div class="content_card">
     <div class="main_content">
       <div class="content">
-        <div class="displayName"><a
-            :href="accountLink"
-            target="_blank"
-          >{{ displayName }}</a></div>
-        <div
-          class="text_content"
-          v-html="plurk.content"
-        ></div>
+        <div class="avatar">
+          <img
+            :src="avatar"
+            alt="avatar"
+          >
+        </div>
+        <div class="article">
+          <div class="displayName"><a
+              :href="accountLink"
+              target="_blank"
+            >{{ displayName }}</a></div>
+          <div
+            class="text_content"
+            v-html="plurk.content"
+          ></div>
+        </div>
       </div>
-
+      <div class="date">{{ postedDate }}</div>
       <div class="info">
         <div
           class="response_count"
@@ -31,7 +39,6 @@
           <i class="fas fa-external-link-alt"></i>
           <div class="text">連結</div>
         </a>
-        <div class="date">{{ postedDate }}</div>
       </div>
     </div>
     <div
@@ -43,15 +50,13 @@
         v-for="replyData in reply"
         :reply-data="replyData"
         :key="replyData.posted"
+        :ownerAccount="account"
       />
       <div
         class="loading"
         v-if="replyLoading"
       >
-        <img
-          src="/ball-loading.gif"
-          alt="loading"
-        >
+        <img src="/ball-loading.gif">
       </div>
     </div>
     <div
@@ -63,97 +68,114 @@
 </template>
 
 <script>
-import replyCard from "./replyCard.vue";
+import replyCard from './replyCard.vue'
 export default {
-  props: ["plurk", "displayName", "account"],
+  props: ['plurk', 'displayName', 'account', 'avatar'],
   data() {
     return {
       replyLoading: false,
       replyOpen: false,
       reply: []
-    };
+    }
   },
   methods: {
     getReply() {
       if (!this.reply.length > 0 && this.plurk.response_count > 0) {
-        this.replyOpen = true;
-        this.replyLoading = true;
+        this.replyOpen = true
+        this.replyLoading = true
         this.$axios
-          .post("https://plurk-timeline.herokuapp.com/reply", {
+          .post('https://plurk-timeline.herokuapp.com/reply', {
             plurk_id: this.plurk.plurk_id
           })
           .then(res => {
-            this.reply = res.data.reply;
-            this.replyLoading = false;
-          });
+            this.reply = res.data.reply
+            this.replyLoading = false
+          })
       } else if (this.reply.length > 0 && this.plurk.response_count > 0) {
-        this.replyOpen = !this.replyOpen;
+        this.replyOpen = !this.replyOpen
       }
     },
     openCloseReply(val) {
-      this.replyOpen = val;
+      this.replyOpen = val
     }
   },
   computed: {
     accountLink() {
-      return `https://www.plurk.com/${this.account}`;
+      return `https://www.plurk.com/${this.account}`
     },
     postedDate() {
-      return new Date(this.plurk.posted).toLocaleString();
+      return new Date(this.plurk.posted).toLocaleString()
     },
     originLink() {
-      return `https://www.plurk.com/p/${this.plurk.plurk_id.toString(36)}`;
+      return `https://www.plurk.com/p/${this.plurk.plurk_id.toString(36)}`
     },
     replyOpenTitle() {
       if (this.replyOpen) {
-        return "收起回覆";
+        return '收起回覆'
       } else {
-        return "展開回覆";
+        return '展開回覆'
       }
     }
   },
   components: {
     replyCard
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>
-@import "../assets/mixin/_mixin.scss";
+@import '../assets/mixin/_mixin.scss';
 .content_card {
   width: 100%;
   margin-top: 10px;
-  padding-top: 15px;
+  padding-top: 10px;
   padding-left: 10px;
   padding-right: 10px;
-  padding-bottom: 15px;
+  padding-bottom: 10px;
   background-color: lighten(#f7ba97, 5%);
   border-radius: 7px;
   &:hover {
     background-color: #f7ba97;
   }
   .main_content {
-    min-height: 70px;
-    padding-right: 10px;
-    padding-left: 10px;
-    @include flex(column, space-between);
-    .content {
+    > .content {
       @include flex();
-      .displayName {
-        margin-right: 10px;
-        text-decoration: none;
-        white-space: nowrap;
+      > .avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 0;
+        > img {
+          width: 60px;
+          height: 60px;
+        }
       }
-      .text_content {
-        font-size: 16px;
-        img {
-          vertical-align: top;
+      > .article {
+        margin-left: 10px;
+        > .displayName {
+          margin-right: 10px;
+          > a {
+            text-decoration: none;
+          }
+        }
+        > .text_content {
+          font-size: 16px;
+          margin-top: 10px;
+          img {
+            vertical-align: top;
+          }
         }
       }
     }
+    > .date {
+      font-size: 13px;
+      color: #616161;
+      text-align: right;
+      margin-top: 30px;
+      margin-right: 10px;
+    }
     .info {
       width: 100%;
-      margin-top: 30px;
+      margin-top: 10px;
       @include flex();
       > .response_count,
       > .link {
@@ -175,12 +197,6 @@ export default {
           margin-left: 5px;
         }
       }
-      > .date {
-        font-size: 13px;
-        color: #616161;
-        align-self: flex-end;
-        margin-left: auto;
-      }
     }
   }
   .reply_group {
@@ -196,7 +212,7 @@ export default {
       padding-left: 10px;
       margin-top: 5px;
       border-radius: 7px;
-      background-color: #ffeebf;
+      background-color: lighten(#ffeebf, 7%);
       @include flex(row, center, center);
       > img {
         height: 50px;
@@ -210,7 +226,7 @@ export default {
     cursor: pointer;
     height: 50px;
     margin-top: 10px;
-    margin-bottom: -5px;
+    // margin-bottom: -5px;
     @include flex(row, center, center);
     &:hover {
       background-color: darken(#bfe9af, 5%);
