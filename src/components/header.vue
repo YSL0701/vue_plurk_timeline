@@ -14,7 +14,6 @@
 </template>
 
 <style lang="scss" scoped>
-@import '@/assets/mixin/_mixin.scss';
 .header {
   width: 100%;
   height: 50px;

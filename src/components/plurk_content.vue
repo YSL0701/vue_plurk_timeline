@@ -1,5 +1,8 @@
 <template>
-  <div class="content_card">
+  <div
+    class="content_card"
+    @click="goResponsePage"
+  >
     <div class="main_content">
       <div class="content">
         <div class="avatar">
@@ -23,8 +26,8 @@
       <div class="info">
         <div
           class="response_count"
-          @click="getReply"
-          :title="replyOpenTitle"
+          @click.stop="getResponse"
+          :title="responseOpenTitle"
         >
           <i class="fas fa-comments"></i>
           <div class="count">
@@ -35,6 +38,7 @@
           :href="originLink"
           target="_blank"
           class="link"
+          @click.stop=""
         >
           <i class="fas fa-external-link-alt"></i>
           <div class="text">連結</div>
@@ -42,61 +46,65 @@
       </div>
     </div>
     <div
-      class="reply_group"
-      v-show="replyOpen"
+      class="response_group"
+      v-show="responseOpen"
     >
-      <replyCard
-        v-show="!replyLoading"
-        v-for="replyData in reply"
-        :reply-data="replyData"
-        :key="replyData.posted"
+      <responseCard
+        v-show="!responseLoading"
+        v-for="responseData in responses"
+        :response-data="responseData"
+        :key="responseData.posted"
         :ownerAccount="account"
       />
       <div
         class="loading"
-        v-if="replyLoading"
+        v-if="responseLoading"
       >
         <img src="/ball-loading.gif">
       </div>
     </div>
     <div
       class="close"
-      v-show="replyOpen && !replyLoading"
-      @click="openCloseReply(false)"
+      v-show="responseOpen && !responseLoading"
+      @click="openCloseResponse(false)"
     >收起回覆</div>
   </div>
 </template>
 
 <script>
-import replyCard from './replyCard.vue'
+import responseCard from './responseCard.vue'
 export default {
   props: ['plurk', 'displayName', 'account', 'avatar'],
   data() {
     return {
-      replyLoading: false,
-      replyOpen: false,
-      reply: []
+      responseLoading: false,
+      responseOpen: false,
+      responses: []
     }
   },
   methods: {
-    getReply() {
-      if (!this.reply.length > 0 && this.plurk.response_count > 0) {
-        this.replyOpen = true
-        this.replyLoading = true
+    getResponse() {
+      if (!this.responses.length > 0 && this.plurk.response_count > 0) {
+        this.responseOpen = true
+        this.responseLoading = true
         this.$axios
-          .post('https://plurk-timeline.herokuapp.com/reply', {
+          .post('https://plurk-timeline.herokuapp.com/response', {
             plurk_id: this.plurk.plurk_id
           })
           .then(res => {
-            this.reply = res.data.reply
-            this.replyLoading = false
+            this.responses = res.data.response
+            this.responseLoading = false
           })
-      } else if (this.reply.length > 0 && this.plurk.response_count > 0) {
-        this.replyOpen = !this.replyOpen
+      } else if (this.responses.length > 0 && this.plurk.response_count > 0) {
+        this.responseOpen = !this.responseOpen
       }
     },
-    openCloseReply(val) {
-      this.replyOpen = val
+    openCloseResponse(val) {
+      this.responseOpen = val
+    },
+    goResponsePage() {
+      this.$store.commit('setPlurkPageData', { plurk: this.plurk, displayName: this.displayName, account: this.account, avatar: this.avatar })
+      this.$router.push('/response')
     }
   },
   computed: {
@@ -109,8 +117,8 @@ export default {
     originLink() {
       return `https://www.plurk.com/p/${this.plurk.plurk_id.toString(36)}`
     },
-    replyOpenTitle() {
-      if (this.replyOpen) {
+    responseOpenTitle() {
+      if (this.responseOpen) {
         return '收起回覆'
       } else {
         return '展開回覆'
@@ -118,13 +126,12 @@ export default {
     }
   },
   components: {
-    replyCard
+    responseCard
   }
 }
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/mixin/_mixin.scss';
 .content_card {
   width: 100%;
   margin-top: 10px;
@@ -151,18 +158,18 @@ export default {
       }
       > .article {
         margin-left: 10px;
+        margin-top: -3px;
         > .displayName {
           margin-right: 10px;
+          font-size: 16px;
+          font-weight: bold;
           > a {
             text-decoration: none;
           }
         }
         > .text_content {
           font-size: 16px;
-          margin-top: 10px;
-          img {
-            vertical-align: top;
-          }
+          margin-top: 5px;
         }
       }
     }
@@ -199,7 +206,7 @@ export default {
       }
     }
   }
-  .reply_group {
+  .response_group {
     margin-top: 10px;
     cursor: default;
     max-height: 500px;
@@ -237,7 +244,7 @@ export default {
 
 <style lang="scss">
 .text_content {
-  line-height: 18px;
+  line-height: 1.5;
   img {
     vertical-align: top;
   }

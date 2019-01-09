@@ -162,12 +162,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/mixin/_mixin.scss';
 $goTimeline_btn_color: #f7ba97;
 .main {
-  margin-top: 70px;
+  padding-top: 70px;
   > .data {
-    margin-top: 30px;
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
@@ -214,7 +212,7 @@ $goTimeline_btn_color: #f7ba97;
         background-color: darken($goTimeline_btn_color, 10%);
       }
       > img {
-        height: 80px;
+        height: 60px;
       }
     }
   }
