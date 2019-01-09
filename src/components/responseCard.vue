@@ -1,22 +1,22 @@
 <template>
-  <div class="reply_content">
+  <div class="response_content">
     <div class="content">
       <div class="avatar">
         <img
-          :src="replyData.avatar"
+          :src="responseData.avatar"
           alt="avatar"
         >
       </div>
       <div class="article">
         <div class="displayName"><a
-            :class="{ owner:replyData.account === ownerAccount }"
+            :class="{ owner:responseData.account === ownerAccount }"
             :style="nameColor"
             :href="accountLink"
             target="_blank"
-          >{{ replyData.displayName }}</a></div>
+          >{{ responseData.displayName }}</a></div>
         <div
           class="text_content"
-          v-html="replyData.content"
+          v-html="responseData.content"
         ></div>
       </div>
     </div>
@@ -26,18 +26,18 @@
 
 <script>
 export default {
-  props: ['replyData', 'ownerAccount'],
+  props: ['responseData', 'ownerAccount'],
   computed: {
     accountLink() {
-      return `https://www.plurk.com/${this.replyData.account}`
+      return `https://www.plurk.com/${this.responseData.account}`
     },
     postedDate() {
-      return new Date(this.replyData.posted).toLocaleString()
+      return new Date(this.responseData.posted).toLocaleString()
     },
     nameColor() {
-      if (this.replyData.nameColor) {
+      if (this.responseData.nameColor) {
         return {
-          color: `#${this.replyData.nameColor}`
+          color: `#${this.responseData.nameColor}`
         }
       } else {
         return
@@ -48,8 +48,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/mixin/_mixin.scss';
-.reply_content {
+.response_content {
   min-height: 70px;
   padding-top: 10px;
   padding-bottom: 10px;
@@ -62,13 +61,22 @@ export default {
   @include flex(column, space-between);
   .content {
     @include flex();
-    > .avatae {
+    > .avatar {
+      width: 36px;
+      height: 36px;
       font-size: 0;
+      > img {
+        width: 36px;
+        height: 36px;
+      }
     }
     > .article {
       margin-left: 10px;
+      margin-top: -2px;
       > .displayName {
         margin-right: 10px;
+        font-size: 16px;
+        font-weight: bold;
         > a {
           text-decoration: none;
           &:hover {
@@ -82,9 +90,6 @@ export default {
       > .text_content {
         font-size: 16px;
         margin-top: 5px;
-        img {
-          vertical-align: top;
-        }
       }
     }
   }
