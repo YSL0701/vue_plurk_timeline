@@ -1,66 +1,91 @@
 <template>
-  <div class="main">
-    <div class="data">
-      <div class="input_area">
-        <div class="account">
-          <span>帳號 : </span>
-          <input
-            type="text"
-            v-model="account"
-            @keyup.enter="getTimeline"
-          ></div>
-        <div class="date">
-          <span>日期 : </span>
-          <input
-            type="date"
-            v-model="date"
-          ></div>
+  <transition name="page">
+    <div class="main">
+      <div class="data">
+        <div class="input_area">
+          <div class="account">
+            <input
+              type="text"
+              placeholder="帳號"
+              v-model="account"
+              @keyup.enter="getTimeline"
+            >
+            <div
+              class="addToAccountList"
+              title="加入常用帳號列表"
+              @click="addToAccountList"
+            >+</div>
+          </div>
+          <div class="accountList">
+            <div
+              class="openList"
+              :class="{isOpen:accountListOpen && accountList.length>0}"
+              @click="openAccountList"
+            >
+              <div class="text">帳號列表</div>
+              <div class="arrow"></div>
+            </div>
+            <accountList
+              v-show="accountListOpen"
+              :current-account.sync="account"
+              @closeAccountList="accountListOpen = false"
+            />
+          </div>
+          <div class="date">
+            <input
+              type="date"
+              v-model="date"
+            >
+          </div>
+        </div>
+        <div
+          class="goTimeline"
+          @click="getTimeline"
+        >
+          <span v-if="!isLoading">啟動時光機!</span>
+          <img
+            v-else
+            src="/loading.gif"
+          >
+        </div>
       </div>
       <div
-        class="goTimeline"
-        @click="getTimeline"
+        class="plurkContentGroup"
+        v-if="timeline.length > 0"
       >
-        <span v-if="!isLoading">啟動時光機!</span>
-        <img
-          v-else
-          src="/loading.gif"
+        <plurkContent
+          v-for="(content,index) in timeline"
+          :plurk="content"
+          :display-name="displayName"
+          :key="index"
+          :account="currentAccount"
+          :avatar="targetAvatar"
+          :prev-plurk="timeline[index - 1]"
+          class="plurkContent"
+        />
+        <div
+          class="more"
+          v-if="this.timeline.length > 0 && canGetMore"
+          @click="getMoreTimeline"
         >
+          <span v-if="!moreLoading">看更多</span>
+          <img
+            v-else
+            src="/loading.gif"
+          >
+        </div>
       </div>
-    </div>
-    <div
-      class="plurkContentGroup"
-      v-if="timeline.length > 0"
-    >
-      <plurkContent
-        v-for="(content,index) in timeline"
-        :plurk="content"
-        :display-name="displayName"
-        :key="index"
-        :account="currentAccount"
-        :avatar="targetAvatar"
-        class="plurkContent"
-      />
       <div
-        class="more"
-        v-if="this.timeline.length > 0 && canGetMore"
-        @click="getMoreTimeline"
-      >
-        <span v-if="!moreLoading">看更多</span>
-        <img
-          v-else
-          src="/loading.gif"
-        >
-      </div>
+        class="error"
+        v-if="error"
+      >{{ error }}</div>
     </div>
-    <div
-      class="error"
-      v-if="error"
-    >{{ error }}</div>
-  </div>
+  </transition>
 </template>
 
 <script>
 import plurkContent from '@/components/plurk_content.vue'
+import accountList from '@/components/accountList.vue'
 export default {
   data() {
     return {
@@ -73,7 +98,8 @@ export default {
       moreLoading: false,
       currentAccount: '',
       targetAvatar: '',
-      canGetMore: true
+      canGetMore: true,
+      accountListOpen: false
     }
   },
   methods: {
@@ -132,6 +158,22 @@ export default {
     },
     clearError() {
       this.error = ''
+    },
+    addToAccountList() {
+      if (this.accountList.length > 0) {
+        if (this.accountList.some(item => item === this.account)) {
+          return
+        }
+        this.$store.commit('addToAccountList', this.account)
+      } else {
+        this.$store.commit('addToAccountList', this.account)
+      }
+      localStorage.setItem('accountList', JSON.stringify(this.accountList))
+    },
+    openAccountList() {
+      if (this.accountList.length > 0) {
+        this.accountListOpen = !this.accountListOpen
+      }
     }
   },
   computed: {
@@ -141,10 +183,14 @@ export default {
       } else {
         return new Date().toISOString()
       }
+    },
+    accountList() {
+      return this.$store.state.accountList.accountList
     }
   },
   components: {
-    plurkContent
+    plurkContent,
+    accountList
   },
   created() {
     this.date = new Date()
@@ -178,7 +224,26 @@ $goTimeline_btn_color: #f7ba97;
       > .account {
         width: 100%;
         color: #ffffff;
+        position: relative;
         @include flex(row, flex-start, center);
+        > .addToAccountList {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 40px;
+          height: 100%;
+          font-size: 24px;
+          font-weight: bold;
+          color: #61433c;
+          line-height: 1;
+          cursor: pointer;
+          border-bottom-right-radius: 5px;
+          border-top-right-radius: 5px;
+          @include flex(row, center, center);
+          &:hover {
+            background-color: darken(#f7eee7, 20%);
+          }
+        }
       }
       > .date {
         margin-top: 10px;
@@ -187,16 +252,40 @@ $goTimeline_btn_color: #f7ba97;
         @include flex(row, flex-start, center);
       }
       input {
-        width: calc(100% - 70px);
-        height: 30px;
+        width: 100%;
+        height: 35px;
         padding-left: 10px;
         background-color: #f7eee7;
         border: none;
         border-radius: 5px;
-        font-size: 16px;
+        font-size: 18px;
+        color: #61433c;
       }
-      span {
-        width: 70px;
+      > .accountList {
+        width: 100%;
+        margin-left: auto;
+        margin-top: 10px;
+        > .openList {
+          height: 30px;
+          background-color: #f7ba97;
+          font-size: 20px;
+          border-radius: 5px;
+          cursor: pointer;
+          @include flex(row, center, center);
+          > .arrow {
+            width: 0;
+            height: 0;
+            border-top: 12px solid #111;
+            border-right: 7px solid #f7ba97;
+            border-left: 7px solid #f7ba97;
+            margin-top: 2px;
+            margin-left: 5px;
+          }
+        }
+        > .isOpen {
+          border-bottom-right-radius: 0;
+          border-bottom-left-radius: 0;
+        }
       }
     }
     > .goTimeline {
@@ -256,6 +345,15 @@ $goTimeline_btn_color: #f7ba97;
       }
     }
   }
+}
+.page-enter {
+  opacity: 0;
+}
+.page-enter-active {
+  transition: all 0.3s;
+}
+.page-enter-to {
+  opacity: 1;
 }
 </style>
 

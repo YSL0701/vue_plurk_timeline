@@ -18,6 +18,7 @@
   width: 100%;
   height: 50px;
   position: fixed;
+  z-index: 10;
   top: 0;
   background-color: #fac487;
   opacity: 0.9;

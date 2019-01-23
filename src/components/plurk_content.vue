@@ -1,80 +1,88 @@
 <template>
-  <div
-    class="content_card"
-    @click="goResponsePage"
-  >
-    <div class="main_content">
-      <div class="content">
-        <div class="avatar">
-          <img
-            :src="avatar"
-            alt="avatar"
-          >
-        </div>
-        <div class="article">
-          <div class="displayName"><a
-              :href="accountLink"
-              target="_blank"
-            >{{ displayName }}</a></div>
-          <div
-            class="text_content"
-            v-html="plurk.content"
-          ></div>
-        </div>
+  <transition name="content">
+    <div
+      class="content_card"
+      :class="{ hasTimeTag : timeTag }"
+      @click="goPlurkPage"
+    >
+      <div
+        class="timeTag"
+        v-if="timeTag"
+      >{{ timeTag }}
       </div>
-      <div class="date">{{ postedDate }}</div>
-      <div class="info">
-        <div
-          class="response_count"
-          @click.stop="getResponse"
-          :title="responseOpenTitle"
-        >
-          <i class="fas fa-comments"></i>
-          <div class="count">
-            {{ plurk.response_count }}
+      <div class="main_content">
+        <div class="content">
+          <div class="avatar">
+            <img
+              :src="avatar"
+              alt="avatar"
+            >
+          </div>
+          <div class="article">
+            <div class="displayName"><a
+                :href="accountLink"
+                target="_blank"
+              >{{ displayName }}</a></div>
+            <div
+              class="text_content"
+              v-html="plurk.content"
+            ></div>
           </div>
         </div>
-        <a
-          :href="originLink"
-          target="_blank"
-          class="link"
-          @click.stop=""
-        >
-          <i class="fas fa-external-link-alt"></i>
-          <div class="text">連結</div>
-        </a>
+        <div class="date">{{ postedDate }}</div>
+        <div class="info">
+          <div
+            class="response_count"
+            @click.stop="getResponse"
+            :title="responseOpenTitle"
+          >
+            <i class="fas fa-comments"></i>
+            <div class="count">
+              {{ plurk.response_count }}
+            </div>
+          </div>
+          <a
+            :href="originLink"
+            target="_blank"
+            class="link"
+            @click.stop=""
+          >
+            <i class="fas fa-external-link-alt"></i>
+            <div class="text">連結</div>
+          </a>
+        </div>
       </div>
-    </div>
-    <div
-      class="response_group"
-      v-show="responseOpen"
-    >
-      <responseCard
-        v-show="!responseLoading"
-        v-for="responseData in responses"
-        :response-data="responseData"
-        :key="responseData.posted"
-        :ownerAccount="account"
-      />
       <div
-        class="loading"
-        v-if="responseLoading"
+        class="response_group"
+        v-show="responseOpen"
       >
-        <img src="/ball-loading.gif">
+        <responseCard
+          v-show="!responseLoading"
+          v-for="responseData in responses"
+          :response-data="responseData"
+          :key="responseData.posted"
+          :ownerAccount="account"
+        />
+        <div
+          class="loading"
+          v-if="responseLoading"
+        >
+          <img src="/ball-loading.gif">
+        </div>
       </div>
+      <div
+        class="close"
+        v-show="responseOpen && !responseLoading"
+        @click="openCloseResponse(false)"
+      >收起回覆</div>
     </div>
-    <div
-      class="close"
-      v-show="responseOpen && !responseLoading"
-      @click="openCloseResponse(false)"
-    >收起回覆</div>
-  </div>
+  </transition>
 </template>
 
 <script>
 import responseCard from './responseCard.vue'
 export default {
-  props: ['plurk', 'displayName', 'account', 'avatar'],
+  props: ['plurk', 'displayName', 'account', 'avatar', 'prevPlurk'],
   data() {
     return {
       responseLoading: false,
@@ -102,9 +110,12 @@ export default {
     openCloseResponse(val) {
       this.responseOpen = val
     },
-    goResponsePage() {
-      this.$store.commit('setPlurkPageData', { plurk: this.plurk, displayName: this.displayName, account: this.account, avatar: this.avatar })
-      this.$router.push('/response')
+    goPlurkPage() {
+      var data = { plurk: this.plurk, displayName: this.displayName, account: this.account, avatar: this.avatar }
+      this.$store.commit('setPlurkPageData', data)
+      localStorage.setItem('plurk_id', this.plurk.plurk_id.toString(36))
+      localStorage.setItem('ownerData', JSON.stringify(data))
+      this.$router.push(`/plurk/${this.plurk.plurk_id.toString(36)}`)
     }
   },
   computed: {
@@ -122,6 +133,29 @@ export default {
         return '收起回覆'
       } else {
         return '展開回覆'
+      }
+    },
+    timeTag() {
+      var postedDate = new Date(this.plurk.posted)
+        .toLocaleDateString()
+        .split('/')
+        .join('-')
+      if (this.prevPlurk) {
+        var prevPosted = {
+          year: new Date(this.prevPlurk.posted).getFullYear(),
+          month: new Date(this.prevPlurk.posted).getMonth(),
+          date: new Date(this.prevPlurk.posted).getDate()
+        }
+        var currentPosted = {
+          year: new Date(this.plurk.posted).getFullYear(),
+          month: new Date(this.plurk.posted).getMonth(),
+          date: new Date(this.plurk.posted).getDate()
+        }
+        if (prevPosted.year !== currentPosted.year || prevPosted.month !== currentPosted.month || prevPosted.date !== currentPosted.date) {
+          return postedDate
+        }
+      } else {
+        return postedDate
       }
     }
   },
@@ -141,10 +175,22 @@ export default {
   padding-bottom: 10px;
   background-color: lighten(#f7ba97, 5%);
   border-radius: 7px;
+  position: relative;
   &:hover {
     background-color: #f7ba97;
   }
-  .main_content {
+  > .timeTag {
+    width: 100%;
+    height: 20px;
+    position: absolute;
+    top: -25px;
+    left: 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    @include flex(row, center, center);
+  }
+  > .main_content {
     > .content {
       @include flex();
       > .avatar {
@@ -240,14 +286,18 @@ export default {
     }
   }
 }
-</style>
-
-<style lang="scss">
-.text_content {
-  line-height: 1.5;
-  img {
-    vertical-align: top;
-  }
+.hasTimeTag {
+  margin-top: 30px;
+}
+.content-enter {
+  opacity: 0;
+}
+.content-enter-active {
+  transition: all 0.3s;
+}
+.content-enter-to {
+  opacity: 1;
 }
 </style>
+
 

@@ -14,9 +14,9 @@ export default new Router({
       }
     },
     {
-      path: '/response',
-      name: 'response',
-      component: () => import('./views/response.vue'),
+      path: '/plurk/:plurk_id',
+      name: 'plurk',
+      component: () => import('./views/plurkPage.vue'),
       meta: {
         keepAlive: false
       }
@@ -28,6 +28,10 @@ export default new Router({
       meta: {
         keepAlive: false
       }
+    },
+    {
+      path: '*',
+      redirect: '/'
     }
   ],
   scrollBehavior(to, from, savedPosition) {
