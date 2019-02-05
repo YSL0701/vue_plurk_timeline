@@ -58,6 +58,10 @@
           <img src="/ball-loading.gif">
         </div>
       </div>
+      <div
+        class="noResponses"
+        v-if="!responseLoading && plurk.response_count === 0"
+      >目前沒有回應喔</div>
     </div>
   </transition>
 </template>
@@ -197,6 +201,9 @@ export default {
         border-radius: 5px;
         background-color: #ffeebf;
         cursor: pointer;
+        &:hover {
+          background-color: darken(#ffeebf, 5%);
+        }
       }
       > .response_count {
         @include flex(row, space-around, center);
@@ -213,7 +220,7 @@ export default {
   }
   .response_group {
     margin-top: 10px;
-    cursor: default;
+    // cursor: default;
     // max-height: 500px;
     // overflow-y: auto;
     .loading {
@@ -231,18 +238,13 @@ export default {
       }
     }
   }
-  .close {
-    font-size: 24px;
-    border-radius: 7px;
-    background-color: #bfe9af;
-    cursor: pointer;
-    height: 50px;
+  > .noResponses {
+    height: 70px;
     margin-top: 10px;
-    // margin-bottom: -5px;
+    font-size: 20px;
+    border-radius: 7px;
+    background-color: lighten(#ffeebf, 7%);
     @include flex(row, center, center);
-    &:hover {
-      background-color: darken(#bfe9af, 5%);
-    }
   }
 }
 

@@ -19,10 +19,13 @@
             >
           </div>
           <div class="article">
-            <div class="displayName"><a
+            <div class="displayName">
+              <a
                 :href="accountLink"
                 target="_blank"
-              >{{ displayName }}</a></div>
+                @click.stop=""
+              >{{ displayName }}</a>
+            </div>
             <div
               class="text_content"
               v-html="plurk.content"
@@ -33,13 +36,20 @@
         <div class="info">
           <div
             class="response_count"
-            @click.stop="getResponse"
-            :title="responseOpenTitle"
+            :title="responseTitle"
           >
             <i class="fas fa-comments"></i>
             <div class="count">
               {{ plurk.response_count }}
             </div>
+          </div>
+          <div
+            class="addToBookmark"
+            title="將這則噗文加入書籤"
+          >
+            <i class="far fa-bookmark"></i>
+            <!-- <i class="fas fa-bookmark"></i> -->
+            <div class="text">加入書籤</div>
           </div>
           <a
             :href="originLink"
@@ -52,29 +62,6 @@
           </a>
         </div>
       </div>
-      <div
-        class="response_group"
-        v-show="responseOpen"
-      >
-        <responseCard
-          v-show="!responseLoading"
-          v-for="responseData in responses"
-          :response-data="responseData"
-          :key="responseData.posted"
-          :ownerAccount="account"
-        />
-        <div
-          class="loading"
-          v-if="responseLoading"
-        >
-          <img src="/ball-loading.gif">
-        </div>
-      </div>
-      <div
-        class="close"
-        v-show="responseOpen && !responseLoading"
-        @click="openCloseResponse(false)"
-      >收起回覆</div>
     </div>
   </transition>
 </template>
@@ -82,13 +69,29 @@
 <script>
 import responseCard from './responseCard.vue'
 export default {
-  props: ['plurk', 'displayName', 'account', 'avatar', 'prevPlurk'],
-  data() {
-    return {
-      responseLoading: false,
-      responseOpen: false,
-      responses: []
+  props: {
+    plurk: {
+      type: Object,
+      required: true
+    },
+    displayName: {
+      type: String,
+      required: true
+    },
+    account: {
+      type: String,
+      required: true
+    },
+    avatar: {
+      type: String,
+      required: true
+    },
+    prevPlurk: {
+      type: Object
     }
+  },
+  data() {
+    return {}
   },
   methods: {
     getResponse() {
@@ -116,6 +119,9 @@ export default {
       localStorage.setItem('plurk_id', this.plurk.plurk_id.toString(36))
       localStorage.setItem('ownerData', JSON.stringify(data))
       this.$router.push(`/plurk/${this.plurk.plurk_id.toString(36)}`)
+    },
+    linkStopPropagation(e) {
+      e.stopPropagation()
     }
   },
   computed: {
@@ -128,12 +134,8 @@ export default {
     originLink() {
       return `https://www.plurk.com/p/${this.plurk.plurk_id.toString(36)}`
     },
-    responseOpenTitle() {
-      if (this.responseOpen) {
-        return '收起回覆'
-      } else {
-        return '展開回覆'
-      }
+    responseTitle() {
+      return `${this.plurk.response_count} 則回應`
     },
     timeTag() {
       var postedDate = new Date(this.plurk.posted)
@@ -141,21 +143,31 @@ export default {
         .split('/')
         .join('-')
       if (this.prevPlurk) {
-        var prevPosted = {
-          year: new Date(this.prevPlurk.posted).getFullYear(),
-          month: new Date(this.prevPlurk.posted).getMonth(),
-          date: new Date(this.prevPlurk.posted).getDate()
-        }
-        var currentPosted = {
-          year: new Date(this.plurk.posted).getFullYear(),
-          month: new Date(this.plurk.posted).getMonth(),
-          date: new Date(this.plurk.posted).getDate()
-        }
-        if (prevPosted.year !== currentPosted.year || prevPosted.month !== currentPosted.month || prevPosted.date !== currentPosted.date) {
+        var prevPosted = new Date(this.prevPlurk.posted)
+        var currentPosted = new Date(this.plurk.posted)
+        if (prevPosted.getFullYear() !== currentPosted.getFullYear() || prevPosted.getMonth() !== currentPosted.getMonth() || prevPosted.getDate() !== currentPosted.getDate()) {
           return postedDate
         }
       } else {
         return postedDate
+      }
+    }
+  },
+  mounted() {
+    // 阻止 v-html內的 <a> 冒泡
+    var links = this.$el.querySelectorAll('.article > .text_content a')
+    if (links.length > 0) {
+      for (var link of links) {
+        link.addEventListener('click', this.linkStopPropagation)
+      }
+    }
+  },
+  beforeDestroy() {
+    // 移除 <a> 的 eventListener
+    var links = this.$el.querySelectorAll('.article > .text_content a')
+    if (links.length > 0) {
+      for (var link of links) {
+        link.removeEventListener('click', this.linkStopPropagation)
       }
     }
   },
@@ -176,6 +188,7 @@ export default {
   background-color: lighten(#f7ba97, 5%);
   border-radius: 7px;
   position: relative;
+  cursor: pointer;
   &:hover {
     background-color: #f7ba97;
   }
@@ -231,6 +244,7 @@ export default {
       margin-top: 10px;
       @include flex();
       > .response_count,
+      > .addToBookmark,
       > .link {
         width: 80px;
         height: 30px;
@@ -238,6 +252,17 @@ export default {
         border-radius: 5px;
         background-color: #ffeebf;
         cursor: pointer;
+        &:hover {
+          background-color: darken(#ffeebf, 5%);
+        }
+      }
+      > .addToBookmark {
+        margin-left: 20px;
+        width: 100px;
+        @include flex(row, center, center);
+        > .text {
+          margin-left: 5px;
+        }
       }
       > .response_count {
         @include flex(row, space-around, center);
@@ -250,39 +275,6 @@ export default {
           margin-left: 5px;
         }
       }
-    }
-  }
-  .response_group {
-    margin-top: 10px;
-    cursor: default;
-    max-height: 500px;
-    overflow-y: auto;
-    .loading {
-      min-height: 70px;
-      padding-top: 5px;
-      padding-bottom: 5px;
-      padding-right: 10px;
-      padding-left: 10px;
-      margin-top: 5px;
-      border-radius: 7px;
-      background-color: lighten(#ffeebf, 7%);
-      @include flex(row, center, center);
-      > img {
-        height: 50px;
-      }
-    }
-  }
-  .close {
-    font-size: 24px;
-    border-radius: 7px;
-    background-color: #bfe9af;
-    cursor: pointer;
-    height: 50px;
-    margin-top: 10px;
-    // margin-bottom: -5px;
-    @include flex(row, center, center);
-    &:hover {
-      background-color: darken(#bfe9af, 5%);
     }
   }
 }

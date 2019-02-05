@@ -26,7 +26,16 @@
 
 <script>
 export default {
-  props: ['responseData', 'ownerAccount'],
+  props: {
+    responseData: {
+      type: Object,
+      required: true
+    },
+    ownerAccount: {
+      tryp: String,
+      required: true
+    }
+  },
   computed: {
     accountLink() {
       return `https://www.plurk.com/${this.responseData.account}`
@@ -55,7 +64,6 @@ export default {
   padding-right: 10px;
   padding-left: 10px;
   margin-top: 5px;
-  cursor: default;
   border-radius: 7px;
   background-color: lighten(#ffeebf, 7%);
   @include flex(column, space-between);

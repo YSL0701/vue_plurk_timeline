@@ -1,24 +1,30 @@
 <template>
-  <div class="list">
-    <div
-      class="accountText"
-      v-for="(account,index) in accountList"
-      @click="useAccount(account)"
-      :key="account"
-    >{{ account }}
+  <transition name="list">
+    <div class="list">
       <div
-        class="removeAccount"
-        @click.stop="removeAccount(index)"
-      >
-        <div class="remove"></div>
+        class="accountText"
+        v-for="(account,index) in accountList"
+        @click="useAccount(account)"
+        :key="account"
+      >{{ account }}
+        <div
+          class="removeAccount"
+          @click.stop="removeAccount(index)"
+        >
+          <div class="remove"></div>
+        </div>
       </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script>
 export default {
-  props: ['currentAccount'],
+  props: {
+    currentAccount: {
+      type: String
+    }
+  },
   methods: {
     useAccount(account) {
       this.$emit('update:currentAccount', account)
@@ -87,6 +93,20 @@ export default {
       }
     }
   }
+}
+.list-enter,
+.list-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s;
+  overflow-y: hidden;
+}
+.list-enter-to,
+.list-leave {
+  opacity: 1;
 }
 </style>
 

@@ -7,7 +7,7 @@
             <input
               type="text"
               placeholder="帳號"
-              v-model="account"
+              v-model.trim="account"
               @keyup.enter="getTimeline"
             >
             <div
@@ -23,7 +23,10 @@
               @click="openAccountList"
             >
               <div class="text">帳號列表</div>
-              <div class="arrow"></div>
+              <div
+                class="arrow"
+                :class="{arrowDown:accountListOpen}"
+              ></div>
             </div>
             <accountList
               v-show="accountListOpen"
@@ -271,6 +274,7 @@ $goTimeline_btn_color: #f7ba97;
           font-size: 20px;
           border-radius: 5px;
           cursor: pointer;
+          transition: border-bottom-right-radius, border-bottom-left-radius 0.5s;
           @include flex(row, center, center);
           > .arrow {
             width: 0;
@@ -280,6 +284,10 @@ $goTimeline_btn_color: #f7ba97;
             border-left: 7px solid #f7ba97;
             margin-top: 2px;
             margin-left: 5px;
+            transition: transform 0.5s;
+          }
+          > .arrowDown {
+            transform: rotate(180deg);
           }
         }
         > .isOpen {

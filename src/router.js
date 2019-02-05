@@ -22,6 +22,14 @@ export default new Router({
       }
     },
     {
+      path: '/bookmark',
+      name: 'bookmark',
+      component: () => import('./views/bookmark.vue'),
+      meta: {
+        keepAlive: true
+      }
+    },
+    {
       path: '/information',
       name: 'information',
       component: () => import('./views/information.vue'),

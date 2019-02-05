@@ -5,12 +5,27 @@
       <router-view v-if="$route.meta.keepAlive" />
     </keep-alive>
     <router-view v-if="!$route.meta.keepAlive" />
+    <div
+      class="sideMenuMask"
+      v-show="sideMenuOpen"
+      @click="closeSideMenu"
+    ></div>
   </div>
 </template>
 
 <script>
 import myHeader from '@/components/header.vue'
 export default {
+  methods: {
+    closeSideMenu() {
+      this.$store.commit('changeSideMenuState', false)
+    }
+  },
+  computed: {
+    sideMenuOpen() {
+      return this.$store.state.sideMenu.sideMenuOpen
+    }
+  },
   components: {
     myHeader
   }
@@ -37,8 +52,25 @@ body {
 }
 .text_content {
   line-height: 1.5;
+  word-break: break-all;
   img {
     vertical-align: top;
   }
 }
 </style>
+
+<style lang="scss" scoped>
+.sideMenuMask {
+  display: none;
+  @include media($tablet) {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+</style>
+
