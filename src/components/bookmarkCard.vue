@@ -2,15 +2,8 @@
   <transition name="content">
     <div
       class="content_card"
-      :class="{ hasTimeTag : timeTag }"
-      @click="goPlurkPage"
+      @click="goBookmarkPage"
     >
-      <div
-        class="timeTag"
-        v-if="timeTag"
-        @click.stop=""
-      >{{ timeTag }}
-      </div>
       <div class="main_content">
         <div class="content">
           <div class="avatar">
@@ -55,17 +48,7 @@
           </a>
           <div
             class="addToBookmark"
-            title="將這則噗文加入書籤"
-            v-if="!isInBookmark"
-            @click.stop="addToBookmark"
-          >
-            <i class="far fa-bookmark"></i>
-            <div class="text">加入書籤</div>
-          </div>
-          <div
-            class="removeBookmark"
             title="刪除書籤"
-            v-else
             @click.stop="removeBookmark"
           >
             <i class="fas fa-bookmark"></i>
@@ -96,37 +79,21 @@ export default {
     avatar: {
       type: String,
       required: true
-    },
-    prevPlurk: {
-      type: Object
     }
   },
   data() {
     return {}
   },
   methods: {
-    goPlurkPage() {
+    goBookmarkPage() {
       var data = { plurk: this.plurk, displayName: this.displayName, account: this.account, avatar: this.avatar }
-      this.$store.commit('setPlurkPageData', data)
-      localStorage.setItem('plurk_id', this.plurk.plurk_id.toString(36))
-      localStorage.setItem('ownerData', JSON.stringify(data))
-      this.$router.push(`/plurk/${this.plurk.plurk_id.toString(36)}`)
+      this.$store.commit('setBookmarkPageData', data)
+      localStorage.setItem('bookmark_plurk_id', this.plurk.plurk_id.toString(36))
+      localStorage.setItem('bookmarkPageData', JSON.stringify(data))
+      this.$router.push(`/bookmark/${this.plurk.plurk_id.toString(36)}`)
     },
     linkStopPropagation(e) {
       e.stopPropagation()
-    },
-    addToBookmark() {
-      var bookmark = JSON.parse(localStorage.getItem('bookmark'))
-      if (bookmark) {
-        if (bookmark.some(item => item.plurk_id === this.plurk.plurk_id)) {
-          return
-        }
-        bookmark.push({ plurk_id: this.plurk.plurk_id, addTime: Date.now() })
-        localStorage.setItem('bookmark', JSON.stringify(bookmark))
-      } else {
-        localStorage.setItem('bookmark', JSON.stringify([{ plurk_id: this.plurk.plurk_id, addTime: Date.now() }]))
-      }
-      this.$store.commit('addToBookmarkList', { plurk: this.plurk, displayName: this.displayName, account: this.account, avatar: this.avatar })
     },
     removeBookmark() {
       var bookmark = JSON.parse(localStorage.getItem('bookmark'))
@@ -147,24 +114,6 @@ export default {
     },
     responseTitle() {
       return `${this.plurk.response_count} 則回應`
-    },
-    timeTag() {
-      var postedDate = new Date(this.plurk.posted)
-        .toLocaleDateString()
-        .split('/')
-        .join('-')
-      if (this.prevPlurk) {
-        var prevPosted = new Date(this.prevPlurk.posted)
-        var currentPosted = new Date(this.plurk.posted)
-        if (prevPosted.getFullYear() !== currentPosted.getFullYear() || prevPosted.getMonth() !== currentPosted.getMonth() || prevPosted.getDate() !== currentPosted.getDate()) {
-          return postedDate
-        }
-      } else {
-        return postedDate
-      }
-    },
-    isInBookmark() {
-      return this.$store.state.bookmark.bookmarkList.some(bookmark => bookmark.plurk.plurk_id === this.plurk.plurk_id)
     }
   },
   mounted() {
@@ -215,7 +164,6 @@ export default {
     font-size: 16px;
     font-weight: bold;
     color: #ffffff;
-    cursor: default;
     @include flex(row, center, center);
   }
   > .main_content {
@@ -260,7 +208,6 @@ export default {
       @include flex();
       > .response_count,
       > .addToBookmark,
-      > .removeBookmark,
       > .link {
         width: 80px;
         height: 30px;
@@ -272,8 +219,7 @@ export default {
           background-color: darken(#ffeebf, 5%);
         }
       }
-      > .addToBookmark,
-      > .removeBookmark {
+      > .addToBookmark {
         margin-left: 20px;
         width: 100px;
         @include flex(row, center, center);
@@ -301,13 +247,19 @@ export default {
 .hasTimeTag {
   margin-top: 30px;
 }
-.content-enter {
+.content-enter,
+.content-leave-to {
   opacity: 0;
 }
-.content-enter-active {
+.content-leave-to {
+  transform: translateX(100px);
+}
+.content-enter-active,
+.content-leave-active {
   transition: all 0.3s;
 }
-.content-enter-to {
+.content-enter-to,
+.content-leave {
   opacity: 1;
 }
 </style>

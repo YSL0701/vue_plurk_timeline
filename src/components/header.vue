@@ -24,9 +24,18 @@
         @click="openSideMenu"
       >
         <div class="box">
-          <div class="line"></div>
-          <div class="line"></div>
-          <div class="line"></div>
+          <div
+            class="line"
+            :class="{line1:sideMenuOpen}"
+          ></div>
+          <div
+            class="line"
+            :class="{line2:sideMenuOpen}"
+          ></div>
+          <div
+            class="line"
+            :class="{line3:sideMenuOpen}"
+          ></div>
         </div>
       </div>
     </div>
@@ -117,9 +126,19 @@ export default {
         height: 20px;
         @include flex(column, space-between, center);
         > .line {
-          width: 100%;
+          width: 28px;
           height: 3px;
           background-color: #61433c;
+          transition: all 0.3s;
+        }
+        > .line1 {
+          transform: rotate(45deg) translate(6px, 6px);
+        }
+        > .line2 {
+          transform: translateX(100px);
+        }
+        > .line3 {
+          transform: rotate(-45deg) translate(6px, -6px);
         }
       }
     }

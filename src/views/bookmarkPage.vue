@@ -109,16 +109,16 @@ export default {
       }
     },
     plurk() {
-      return this.$store.state.plurk.plurkPageData.plurk
+      return this.$store.state.bookmark.pageData.plurk
     },
     displayName() {
-      return this.$store.state.plurk.plurkPageData.displayName
+      return this.$store.state.bookmark.pageData.displayName
     },
     account() {
-      return this.$store.state.plurk.plurkPageData.account
+      return this.$store.state.bookmark.pageData.account
     },
     avatar() {
-      return this.$store.state.plurk.plurkPageData.avatar
+      return this.$store.state.bookmark.pageData.avatar
     }
   },
   components: {
@@ -129,7 +129,7 @@ export default {
       this.getResponse()
     } else {
       if (this.$route.params.plurk_id === localStorage.getItem('plurk_id')) {
-        this.$store.commit('setPlurkPageData', JSON.parse(localStorage.getItem('ownerData')))
+        this.$store.commit('setBookmarkPageData', JSON.parse(localStorage.getItem('ownerData')))
         this.getResponse()
       }
     }

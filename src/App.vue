@@ -28,6 +28,16 @@ export default {
   },
   components: {
     myHeader
+  },
+  mounted() {
+    var plurk_id_list = JSON.parse(localStorage.getItem('bookmark'))
+    if (plurk_id_list && plurk_id_list.length > 0) {
+      this.$store.commit('bookmarkLoading', true)
+      this.$axios.post('https://plurk-timeline.herokuapp.com/plurkPage', { plurk_id_list }).then(res => {
+        this.$store.commit('bookmarkLoading', false)
+        this.$store.commit('setBookmarkList', res.data)
+      })
+    }
   }
 }
 </script>

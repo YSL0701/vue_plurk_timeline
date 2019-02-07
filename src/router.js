@@ -30,6 +30,14 @@ export default new Router({
       }
     },
     {
+      path: '/bookmark/:plurk_id',
+      name: 'bookmarkPage',
+      component: () => import('./views/bookmarkPage.vue'),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
       path: '/information',
       name: 'information',
       component: () => import('./views/information.vue'),
