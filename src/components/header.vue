@@ -19,6 +19,14 @@
         to="/information"
         class="information link"
       >說明</router-link>
+      <router-link
+        to="/about"
+        class="about link"
+      >關於</router-link>
+      <div
+        class="goTop link"
+        @click="goTop"
+      >回頂部</div>
       <div
         class="ham-btn"
         @click="openSideMenu"
@@ -56,6 +64,9 @@ export default {
       } else {
         this.$store.commit('changeSideMenuState', true)
       }
+    },
+    goTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   },
   computed: {
@@ -93,6 +104,9 @@ export default {
       text-decoration: none;
       font-size: 24px;
       color: #61433c;
+      &:hover {
+        color: #ffffff;
+      }
     }
     > .home {
       margin-left: 50px;
@@ -107,8 +121,16 @@ export default {
         display: none;
       }
     }
-    > .information {
+    > .information,
+    > .about {
+      margin-right: 10px;
+      @include media($tablet) {
+        display: none;
+      }
+    }
+    > .goTop {
       margin-right: 35px;
+      cursor: pointer;
       @include media($tablet) {
         display: none;
       }

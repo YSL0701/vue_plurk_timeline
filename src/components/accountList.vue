@@ -31,6 +31,7 @@ export default {
     },
     removeAccount(index) {
       this.$store.commit('removeAccount', index)
+      localStorage.setItem('accountList', JSON.stringify(this.accountList))
       if (this.accountList.length === 0) {
         this.$emit('closeAccountList')
       }

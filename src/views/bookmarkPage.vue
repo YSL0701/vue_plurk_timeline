@@ -36,6 +36,24 @@
             <i class="fas fa-external-link-alt"></i>
             <div class="text">連結</div>
           </a>
+          <div
+            class="addToBookmark"
+            title="將這則噗文加入書籤"
+            v-if="!isInBookmark"
+            @click.stop="addToBookmark"
+          >
+            <i class="far fa-bookmark"></i>
+            <div class="text">加入書籤</div>
+          </div>
+          <div
+            class="removeBookmark"
+            title="刪除書籤"
+            v-else
+            @click.stop="removeBookmark"
+          >
+            <i class="fas fa-bookmark"></i>
+            <div class="text">刪除書籤</div>
+          </div>
         </div>
       </div>
       <div
@@ -92,6 +110,25 @@ export default {
       } else if (this.responses.length > 0 && this.plurk.response_count > 0) {
         this.responseOpen = !this.responseOpen
       }
+    },
+    addToBookmark() {
+      var bookmark = JSON.parse(localStorage.getItem('bookmark'))
+      if (bookmark) {
+        if (bookmark.some(item => item.plurk_id === this.plurk.plurk_id)) {
+          return
+        }
+        bookmark.push({ plurk_id: this.plurk.plurk_id, addTime: Date.now() })
+        localStorage.setItem('bookmark', JSON.stringify(bookmark))
+      } else {
+        localStorage.setItem('bookmark', JSON.stringify([{ plurk_id: this.plurk.plurk_id, addTime: Date.now() }]))
+      }
+      this.$store.commit('addToBookmarkList', { plurk: this.plurk, displayName: this.displayName, account: this.account, avatar: this.avatar })
+    },
+    removeBookmark() {
+      var bookmark = JSON.parse(localStorage.getItem('bookmark'))
+      bookmark.splice(bookmark.findIndex(item => item.plurk_id === this.plurk.plurk_id), 1)
+      localStorage.setItem('bookmark', JSON.stringify(bookmark))
+      this.$store.commit('removeBookmark', this.plurk.plurk_id)
     }
   },
   computed: {
@@ -119,6 +156,9 @@ export default {
     },
     avatar() {
       return this.$store.state.bookmark.pageData.avatar
+    },
+    isInBookmark() {
+      return this.$store.state.bookmark.bookmarkList.some(bookmark => bookmark.plurk.plurk_id === this.plurk.plurk_id)
     }
   },
   components: {
@@ -194,6 +234,8 @@ export default {
       margin-top: 10px;
       @include flex();
       > .response_count,
+      > .addToBookmark,
+      > .removeBookmark,
       > .link {
         width: 80px;
         height: 30px;
@@ -205,8 +247,23 @@ export default {
           background-color: darken(#ffeebf, 5%);
         }
       }
+      > .addToBookmark,
+      > .removeBookmark {
+        margin-left: 20px;
+        width: 100px;
+        @include flex(row, center, center);
+        > .text {
+          margin-left: 5px;
+        }
+        > i {
+          color: #5c413e;
+        }
+      }
       > .response_count {
         @include flex(row, space-around, center);
+        > i {
+          color: #5c413e;
+        }
       }
       > .link {
         margin-left: 20px;
@@ -214,6 +271,9 @@ export default {
         @include flex(row, center, center);
         > .text {
           margin-left: 5px;
+        }
+        > i {
+          color: #5c413e;
         }
       }
     }

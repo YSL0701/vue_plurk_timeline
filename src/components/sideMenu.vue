@@ -18,6 +18,10 @@
           class="information link"
         >說明</div>
         <div
+          @click="routerPush('/about')"
+          class="about link"
+        >關於</div>
+        <div
           class="goTop link"
           @click="goTop"
         >回頂部</div>

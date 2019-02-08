@@ -163,14 +163,10 @@ export default {
       this.error = ''
     },
     addToAccountList() {
-      if (this.accountList.length > 0) {
-        if (this.accountList.some(item => item === this.account)) {
-          return
-        }
-        this.$store.commit('addToAccountList', this.account)
-      } else {
-        this.$store.commit('addToAccountList', this.account)
+      if (this.accountList.length > 0 && this.accountList.some(item => item === this.account)) {
+        return
       }
+      this.$store.commit('addToAccountList', this.account)
       localStorage.setItem('accountList', JSON.stringify(this.accountList))
     },
     openAccountList() {

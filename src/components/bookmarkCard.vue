@@ -227,11 +227,14 @@ export default {
           margin-left: 5px;
         }
         > i {
-          color: #953410;
+          color: #5c413e;
         }
       }
       > .response_count {
         @include flex(row, space-around, center);
+        > i {
+          color: #5c413e;
+        }
       }
       > .link {
         margin-left: 20px;
@@ -239,6 +242,9 @@ export default {
         @include flex(row, center, center);
         > .text {
           margin-left: 5px;
+        }
+        > i {
+          color: #5c413e;
         }
       }
     }
